@@ -82,6 +82,9 @@ public class CompilerGUI extends JFrame {
     }
 
     private void compileButtonAction() {
+        
+        
+        
         outputArea.setText("");
         String sourceCode = codeArea.getText();
         
@@ -104,6 +107,30 @@ public class CompilerGUI extends JFrame {
             outputArea.append("TABLA DE SÍMBOLOS:\n");
             outputArea.append("═".repeat(50) + "\n");
             outputArea.append(compiler.getSymbolTableReport());
+            
+            outputArea.append("\n");
+            outputArea.append("═".repeat(50) + "\n");
+            outputArea.append("EJECUCIÓN DEL PROGRAMA:\n");
+            outputArea.append("═".repeat(50) + "\n");
+
+            try {
+                java.util.List<String> salida = compiler.run();
+                if (salida.isEmpty()) {
+                    outputArea.append("(El programa no produjo salida)\n");
+                } else {
+                    for (String linea : salida) {
+                        outputArea.append(linea);
+                        outputArea.append("\n");
+                    }
+                }
+            } catch (RuntimeException ex) {
+                outputArea.append("[ERROR DE EJECUCIÓN] ");
+                outputArea.append(ex.getMessage());
+                outputArea.append("\n");
+            }                
+
+            
+            
         } else {
             outputArea.append("✗✗✗ COMPILACIÓN FALLIDA ✗✗✗\n\n");
             outputArea.append(compiler.getAllErrorsReport());

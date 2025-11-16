@@ -7,6 +7,9 @@ import SymbolTable.SymbolTable;
 import SymbolTable.Symbol;
 import Utils.CompilerError;
 import java.util.*;
+import Runtime.Interpreter;
+import Utils.Language;
+import Utils.ErrorMessages;
 
 // Flujo: Código fuente → Léxico → Tokens → Sintáctico → AST → Semántico → Resultados
 //                  ↓                     ↓               ↓
@@ -17,6 +20,7 @@ public class Compiler {
     private Parser parser;
     private SemanticAnalyzer semanticAnalyzer;
     private SymbolTable symbolTable;
+    private Interpreter interpreter;
 
     // Resultados
     private List<Token> tokens;
@@ -31,7 +35,8 @@ public class Compiler {
     // Ejecuta todas las fases. Devuelve true si no hubo errores.
     public boolean compile() {
         allErrors.clear();
-
+        ErrorMessages.setLanguage(Language.SPANISH);
+         
         // Fase 1: Análisis léxico
         System.out.println("=== FASE 1: ANÁLISIS LÉXICO ===");
         lexer = new Lexer(sourceCode);
@@ -184,6 +189,21 @@ public class Compiler {
         return allErrors.isEmpty();
     }
 
+    public List<String> run() {
+        if (ast == null) {
+            throw new IllegalStateException("No hay AST disponible. Llama a compile() primero.");
+        }
+
+        interpreter = new Interpreter();
+        interpreter.execute(ast);
+
+        return interpreter.getOutput();
+    }
+
+    public Interpreter getInterpreter() {
+        return interpreter;
+    }
+    
     // Errores por fase específica
     public List<CompilerError> getErrorsByPhase(CompilerError.ErrorPhase phase) {
         List<CompilerError> phaseErrors = new ArrayList<>();
@@ -209,5 +229,6 @@ public class Compiler {
     public SymbolTable getSymbolTable() {
         return symbolTable;
     }
+    
 
 }
