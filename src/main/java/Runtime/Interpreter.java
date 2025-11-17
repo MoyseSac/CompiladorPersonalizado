@@ -97,9 +97,9 @@ public class Interpreter {
         } else if (node instanceof FunctionCallNode) {
             evaluateFunctionCall((FunctionCallNode) node);
         } 
-//        else if (node instanceof PrintStatementNode) {
-//            executePrint((PrintStatementNode) node);
-//        }
+        else if (node instanceof PrintStatementNode) {
+            executePrint((PrintStatementNode) node);
+        }
     }
     
     private void executeVarDeclaration(VarDeclarationNode node) {
@@ -347,11 +347,13 @@ public class Interpreter {
 
         return null;
     }
+    
+    private void executePrint(PrintStatementNode node) {
+        Object val = evaluateExpression(node.expression);
+        String s = (val == null) ? "null" : val.toString();
+        output.add(s);
+        // Verificaremos en la terminal de netbeans
+        System.out.println(s);
+    }
  
 }
-
-
-
-    
-
-

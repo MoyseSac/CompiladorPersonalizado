@@ -129,6 +129,8 @@ public class Parser {
         }
         if (currentToken.type == TokenType.IDENTIFIER) {
             return parseAssignmentOrCall();
+        }if (currentToken.type == TokenType.PRINT) {
+            return parsePrintStatement();
         }
 
         errors.add(new CompilerError(
@@ -485,6 +487,23 @@ public class Parser {
         ));
         return null;
     }
+    
+    private PrintStatementNode parsePrintStatement() {
+        Position pos = currentToken.position;
+
+        // Verificamos que realmente haya un PRINT aquí
+        expect(TokenType.PRINT);
+
+        // Parsear la expresión a imprimir
+        ASTNodo expr = parseExpression();
+
+        // Consumir el punto y coma
+        expect(TokenType.SEMICOLON);
+
+        return new PrintStatementNode(expr, pos);
+    }
+
+    
 
     // ============== EXPRESIONES (precedencia) ==============
 

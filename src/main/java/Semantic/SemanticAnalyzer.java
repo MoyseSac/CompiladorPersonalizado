@@ -54,7 +54,9 @@ public class SemanticAnalyzer {
             analyzeUnaryOp((UnaryOpNode) node);
         } else if (node instanceof VariableNode) {
             analyzeVariable((VariableNode) node);
-        } 
+        } else if (node instanceof PrintStatementNode){
+            analyzePrintStatement((PrintStatementNode) node);
+        }
     }
 
     // ================= Declaraciones =================
@@ -506,6 +508,16 @@ public class SemanticAnalyzer {
 
         symbol.setUsed(true);
     }
+    
+    //Cualquier variable que use print se marcara como usada 
+    private void analyzePrintStatement(PrintStatementNode node) {
+    
+        if (node.expression != null) {
+            analyzeNode(node.expression);
+    }
+}
+    
+    
 
     // ================= Tipos y utilidades =================
 
