@@ -10,6 +10,8 @@ import java.util.*;
 import Runtime.Interpreter;
 import Utils.Language;
 import Utils.ErrorMessages;
+import Utils.Position;
+import java.util.function.Consumer;
 
 // Flujo: Código fuente → Léxico → Tokens → Sintáctico → AST → Semántico → Resultados
 //                  ↓                     ↓               ↓
@@ -42,17 +44,19 @@ public class Compiler {
         lexer = new Lexer(sourceCode);
         tokens = lexer.tokenize();
         allErrors.addAll(lexer.getErrors());
-
+        
         System.out.println("Tokens generados: " + tokens.size());
         System.out.println("Errores léxicos: " + lexer.getErrors().size());
 
         // Fase 2: Análisis sintáctico
         System.out.println("\n=== FASE 2: ANÁLISIS SINTÁCTICO ===");
         symbolTable = new SymbolTable();
+        
+        registerBuiltins();
         parser = new Parser(tokens, symbolTable);
         ast = parser.parse();
         allErrors.addAll(parser.getErrors());
-
+        
         System.out.println("Errores sintácticos: " + parser.getErrors().size());
 
         // Fase 3: Análisis semántico
@@ -189,12 +193,12 @@ public class Compiler {
         return allErrors.isEmpty();
     }
 
-    public List<String> run() {
+    public List<String> run(Consumer<String> outputConsumer) {
         if (ast == null) {
             throw new IllegalStateException("No hay AST disponible. Llama a compile() primero.");
         }
 
-        interpreter = new Interpreter();
+        interpreter = new Interpreter(outputConsumer);
         interpreter.execute(ast);
 
         return interpreter.getOutput();
@@ -229,6 +233,28 @@ public class Compiler {
     public SymbolTable getSymbolTable() {
         return symbolTable;
     }
+    
+    
+    private void registerBuiltins() {
+    // Declarar función nativa: sikiri_ajilabal : integer (string mensaje)
+        Position pos = new Position(0, 0); // posición "ficticia"
+        symbolTable.declare("sikiri_ajilabal", "integer", Symbol.SymbolKind.FUNCTION, pos);
+
+        Symbol f = symbolTable.lookup("sikiri_ajilabal");
+        if (f != null) {
+            f.setReturnType("integer");
+            f.setParameterCount(1); // un parámetro: el mensaje (string)
+        }
+        
+        symbolTable.declare("sikiri_tzij", "string", Symbol.SymbolKind.FUNCTION, pos);
+        Symbol fStr = symbolTable.lookup("sikiri_tzij");
+        if (fStr != null) {
+            fStr.setReturnType("string");
+            fStr.setParameterCount(1);
+        }
+        
+    }
+
     
 
 }

@@ -114,20 +114,22 @@ public class CompilerGUI extends JFrame {
             outputArea.append("═".repeat(50) + "\n");
 
             try {
-                java.util.List<String> salida = compiler.run();
+                java.util.List<String> salida = compiler.run(linea -> {
+                    outputArea.append(linea);
+                    outputArea.append("\n");
+                    // opcional: autoscroll al final
+                    outputArea.setCaretPosition(outputArea.getDocument().getLength());
+                });
+
                 if (salida.isEmpty()) {
                     outputArea.append("(El programa no produjo salida)\n");
-                } else {
-                    for (String linea : salida) {
-                        outputArea.append(linea);
-                        outputArea.append("\n");
-                    }
                 }
+
             } catch (RuntimeException ex) {
                 outputArea.append("[ERROR DE EJECUCIÓN] ");
                 outputArea.append(ex.getMessage());
                 outputArea.append("\n");
-            }                
+            }            
 
             
             

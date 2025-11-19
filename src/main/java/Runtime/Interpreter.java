@@ -2,14 +2,17 @@ package Runtime;
 
 import Parser.*;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Interpreter {
 
     private final Deque<Map<String, Object>> scopes = new ArrayDeque<>();
     private final Map<String, FunctionDeclarationNode> functions = new HashMap<>();
     private final List<String> output = new ArrayList<>();
+    private final Consumer<String> outputConsumer;
 
-    public Interpreter() {
+    public Interpreter(Consumer<String> outputConsumer) {
+        this.outputConsumer = outputConsumer;
         pushScope(); // scope global
     }
 
@@ -225,6 +228,14 @@ public class Interpreter {
     }
     
     private Object evaluateFunctionCall(FunctionCallNode node) {
+        if ("sikiri_ajilabal".equals(node.functionName)) {
+            return nativeReadInteger(node);
+        }
+        
+        if ("sikiri_tzij".equals(node.functionName)) {
+            return nativeReadString(node);
+        }
+        
         FunctionDeclarationNode fn = functions.get(node.functionName);
         if (fn == null) {
             throw new RuntimeException("Función '" + node.functionName + "' no encontrada en tiempo de ejecución");
@@ -262,7 +273,71 @@ public class Interpreter {
         }
     }
     
+    
+    private Object nativeReadInteger(FunctionCallNode node) {
+        // Evaluar el argumento 0 como mensaje (si existe)
+        String prompt = "";
+        if (!node.arguments.isEmpty()) {
+            Object arg0 = evaluateExpression(node.arguments.get(0));
+            if (arg0 != null) {
+                prompt = arg0.toString();
+            }
+        }
 
+        // Mostrar diálogo para pedir número
+        String input = javax.swing.JOptionPane.showInputDialog(
+            null,
+            prompt,
+            "Entrada de número (ajilabal)",
+            javax.swing.JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (input == null) {
+            // Usuario canceló: por ahora devolvemos 0
+            return 0;
+        }
+
+        try {
+            return Integer.parseInt(input.trim());
+        } catch (NumberFormatException ex) {
+            // Si no es un número, por ahora devolvemos 0
+            // Podrías también lanzar excepción de ejecución o pedir de nuevo
+            javax.swing.JOptionPane.showMessageDialog(
+                null,
+                "No ingresaste un número válido. Se usará 0.",
+                "Entrada inválida",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return 0;
+        }
+    }
+
+    private Object nativeReadString(FunctionCallNode node) {
+        // Evaluar el argumento 0 como mensaje (si existe)
+        String prompt = "";
+        if (!node.arguments.isEmpty()) {
+            Object arg0 = evaluateExpression(node.arguments.get(0));
+            if (arg0 != null) {
+                prompt = arg0.toString();
+            }
+        }
+
+        String input = javax.swing.JOptionPane.showInputDialog(
+            null,
+            prompt,
+            "Entrada de texto (tzij)",
+            javax.swing.JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (input == null) {
+            // Usuario canceló: devolvemos cadena vacía por ahora
+            return "";
+        }
+
+        return input;
+    }
+    
+    
     private Object evaluateExpression(ASTNodo node) {
         if (node instanceof LiteralNode) {
             LiteralNode lit = (LiteralNode) node;
@@ -352,6 +427,11 @@ public class Interpreter {
         Object val = evaluateExpression(node.expression);
         String s = (val == null) ? "null" : val.toString();
         output.add(s);
+        
+        if (outputConsumer != null) {
+        outputConsumer.accept(s);
+        }
+        
         // Verificaremos en la terminal de netbeans
         System.out.println(s);
     }
